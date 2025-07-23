@@ -51,7 +51,7 @@ class TestHTMLNode(unittest.TestCase):
 
         self.assertEqual(
             node.__repr__(), 
-            "HTMLNode(tag here, value here, ['child list'], {'props': 'dict'})"
+            "\nHTMLNode(tag here, value here, ['child list'], {'props': 'dict'})"
         )       
 
 class TestLeafNode(unittest.TestCase):
@@ -106,7 +106,7 @@ class TestLeafNode(unittest.TestCase):
 
         self.assertEqual(
             node.__repr__(), 
-            "LeafNode(tag first, value second, {'props': 'dict'})"
+            "\nLeafNode(tag first, value second, {'props': 'dict'})"
         )
 
 class TestParentNode(unittest.TestCase):
@@ -175,7 +175,7 @@ class TestParentNode(unittest.TestCase):
 
         self.assertEqual(
             node.__repr__(), 
-            "ParentNode(tag first, ['child list second'], {'props': 'dict'})"
+            "\nParentNode(tag first, ['child list second'], {'props': 'dict'})"
         )
 
 

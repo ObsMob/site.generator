@@ -24,6 +24,11 @@ class TextNode():
             textnode1.url == textnode2.url
         )
 
+    def __repr__(self):
+        if self.url is None:
+            return f'\nTextNode({self.text}, {self.text_type})'
+        return f'\nTextNode({self.text}, {self.text_type}, {self.url})'
+      
 def text_node_to_html_node(text_node):
     match text_node.text_type:
         case TextType.TEXT:
@@ -52,6 +57,3 @@ def text_node_to_html_node(text_node):
             )
         case _:
             raise ValueError("invalid text type")
-
-    def __repr__(self):
-        return f'TextNode({self.text}, {self.text_type.value}, {self.url})'
