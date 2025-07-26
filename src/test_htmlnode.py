@@ -69,9 +69,11 @@ class TestLeafNode(unittest.TestCase):
     def test_to_html(self):
         node = LeafNode("b", "this is bold text")
         node2 = LeafNode("a", "this is link text", {"href": "obsmob.com"})
+        node3 = LeafNode("img", "", {"src": "obsmob.com", "alt": "this is alt text"})
         
         self.assertEqual(node.to_html(), "<b>this is bold text</b>")
         self.assertEqual(node2.to_html(), '<a href="obsmob.com">this is link text</a>')
+        self.assertEqual(node3.to_html(), '<img src="obsmob.com" alt="this is alt text">')
 
     def test_to_html_error(self):
         node = LeafNode("a", "this is link text")
@@ -79,7 +81,7 @@ class TestLeafNode(unittest.TestCase):
 
         with self.assertRaises(ValueError) as exc:
             node.to_html()
-        self.assertEqual(f'{exc.exception}', '"a" tag requires "href": "url"')
+        self.assertEqual(f'{exc.exception}', '"a" and "img" tags require a "url"')
 
         with self.assertRaises(ValueError) as exc2:
             node2.to_html()

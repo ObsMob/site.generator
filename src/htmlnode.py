@@ -11,13 +11,27 @@ class HTMLNode():
     def props_to_html(self):
         props_html = ""
         
-        if self.props is None:
-            return ""
+        if self.props:       
+            for (key, value) in self.props.items():
+                props_html += f' {key}="{value}"'
         
-        for (key, value) in self.props.items():
-            props_html += f' {key}="{value}"'
         return props_html
     
+    def __eq__(self, other):
+        if self.children is None:
+            return (
+                self.tag == other.tag and
+                self.value == other.value and
+                self.props == other.props
+            )
+
+        if self.value is None:
+            return (
+                self.tag == other.tag and
+                self.children == other.children and
+                self.props == other.props
+             )
+
     def __repr__(self):
         return f'\nHTMLNode({self.tag}, {self.value}, {self.children}, {self.props})'
 
@@ -29,17 +43,26 @@ class LeafNode(HTMLNode):
         if self.value is None:
             raise ValueError("must have a text value")
         
-        if self.tag == "a":
+        if self.tag == "a" or self.tag == "img":
             if self.props is None:
-                raise ValueError('"a" tag requires "href": "url"')
-            return f'<a href="{self.props["href"]}">{self.value}</a>'
+                raise ValueError('"a" and "img" tags require a "url"')
+            
+            if self.tag == "a":
+                return f'<a href="{self.props["href"]}">{self.value}</a>'
+            
+            if self.tag == "img":
+                if self.props["alt"]:
+                    return f'<img src="{self.props["src"]}" alt="{self.props["alt"]}">'
+                return f'<img src="{self.props["src"]}">'
                 
         if self.tag is None:
-            return f'{self.value}'
+            return self.value
         
         return f'<{self.tag}>{self.value}</{self.tag}>'
 
     def __repr__(self):
+        if self.props is None:
+            return f'\nLeafNode({self.tag}, {self.value})'
         return f'\nLeafNode({self.tag}, {self.value}, {self.props})'
 
 class ParentNode(HTMLNode):
@@ -61,5 +84,7 @@ class ParentNode(HTMLNode):
         return f'<{self.tag}>{child_html}</{self.tag}>'
 
     def __repr__(self):
+        if self.props is None:
+            return f'\nParentNode({self.tag}, {self.children})'
         return f'\nParentNode({self.tag}, {self.children}, {self.props})'
   

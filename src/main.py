@@ -1,6 +1,6 @@
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode
-from markdown_to_text import extract_markdown_images, extract_markdown_links, text_to_textnodes
+from markdown_inline import extract_markdown_images, extract_markdown_links, text_to_textnodes
 
 
 def main():
@@ -31,7 +31,7 @@ def main():
     print(test_image_extract)
     print(test_link_extract)
     print(test_image_extract_empty)
-    print(full_test)
+    print(test_full)
 
 
 if __name__ == "__main__":
