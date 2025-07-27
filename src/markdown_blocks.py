@@ -13,14 +13,42 @@ class BlockType(Enum):
     QUOTE = "quote"
     BULLET = "unordered list"
     NUMBER = "ordered list"
+        
+def is_list_type(block):
+    if (block_to_block_type(block) == BlockType.BULLET or 
+        block_to_block_type(block) == BlockType.NUMBER
+    ):
+        return True
+    
+    return False
+
+def is_code_type(block):
+    if block_to_block_type(block) == BlockType.CODE:
+        return True
+    
+    return False
+
+def is_heading_type(block):
+    if block_to_block_type(block) == BlockType.HEAD:
+        return True
+    
+    return False
+
+def is_quote_type(block):
+    if block_to_block_type(block) == BlockType.QUOTE:
+        return True
+    
+    return False
 
 def markdown_to_blocks(markdown):
     blocks = markdown.split("\n\n")
     cleaned_blocks = []
+    
     for block in blocks:
         cleaned_block = block.strip()
         if cleaned_block != "":
             cleaned_blocks.append(cleaned_block)
+    
     return cleaned_blocks
 
 def block_to_block_type(block):
@@ -46,28 +74,38 @@ def block_to_block_type(block):
 
 def block_to_textnodes(block):
     block_textnodes = []
-    is_code = is_code_type(block)
 
-    if is_code is True:
+    if is_code_type(block) is True:
         block_textnodes.append(
             TextNode(block.strip("```"), TextType.CODE)
-        )   
+        )
+
     else:    
         lines = block.split("\n")
         
-        for line in lines:
-            textnode_line = text_to_textnodes(line)
-            block_textnodes.extend(textnode_line)
+        if is_list_type(block) is True:
+            for i in range(len(lines)):
+                block_textnodes.append([])
+                textnode_line = text_to_textnodes(lines[i])
+                block_textnodes[i].extend(textnode_line)
+        else:        
+            for line in lines:
+                textnode_line = text_to_textnodes(line)
+                block_textnodes.extend(textnode_line)
     
     return block_textnodes
 
-def block_textnode_to_htmlnode(textnodes, block):
+def block_textnode_to_htmlnode(textnodes, block): 
     html_nodes = []
 
     if is_list_type(block) is True:
-        for node in textnodes:
-            node.text = re.sub(r"^(?:\d+\. |- )", "", node.text, count=1)
-            list_parent = ParentNode("li", [text_node_to_html_node(node)])
+        for parentnode in textnodes:
+            list_parent = ParentNode("li", [])
+
+            for childnode in parentnode:
+                childnode.text = re.sub(r"^(?:\d+\. |- )", "", childnode.text, count=1)
+                list_parent.children.append(text_node_to_html_node(childnode))
+            
             html_nodes.append(list_parent)
     
     else:
@@ -78,50 +116,24 @@ def block_textnode_to_htmlnode(textnodes, block):
             
             if is_quote_type(block) is True:
                 if node == textnodes[0]:
-                    node.text = re.sub(r"^>", "", node.text, count=1)
+                    node.text = re.sub(r"^> *", "", node.text, count=1)
                 else:
-                    node.text = re.sub(r"^>", " ", node.text, count=1)
+                    node.text = re.sub(r"^> *", " ", node.text, count=1)
             
             html_nodes.append(text_node_to_html_node(node))
 
     return html_nodes
-        
-def is_list_type(block):
-    if (block_to_block_type(block) == BlockType.BULLET or 
-        block_to_block_type(block) == BlockType.NUMBER
-    ):
-        return True
-    return False
-
-def is_code_type(block):
-    if block_to_block_type(block) == BlockType.CODE:
-        return True
-    return False
-
-def is_heading_type(block):
-    if block_to_block_type(block) == BlockType.HEAD:
-        return True
-    return False
-
-def is_quote_type(block):
-    if block_to_block_type(block) == BlockType.QUOTE:
-        return True
-    return False
 
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
     html_node = ParentNode("div", [])
 
-    
-
     for block in blocks:
         block_node = ParentNode("", [])
-
         block_textnodes = block_to_textnodes(block)
         block_htmlnodes = (
             block_textnode_to_htmlnode(block_textnodes, block)
         )
-        
         match block_to_block_type(block):
 
             case BlockType.HEAD:               

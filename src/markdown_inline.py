@@ -75,6 +75,14 @@ def split_nodes_link(old_nodes):
     
     return cleaned_nodes
 
+def extract_markdown_images(text):
+    images = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    return images
+
+def extract_markdown_links(text):
+    links = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    return links
+
 def text_to_textnodes(text):
     cleaned_nodes = [TextNode(text, TextType.TEXT)]
     delimiters = {
@@ -89,11 +97,3 @@ def text_to_textnodes(text):
     cleaned_nodes = split_nodes_image(cleaned_nodes)
     cleaned_nodes = split_nodes_link(cleaned_nodes)
     return cleaned_nodes
-
-def extract_markdown_images(text):
-    images = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
-    return images
-
-def extract_markdown_links(text):
-    links = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
-    return links
