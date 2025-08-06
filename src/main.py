@@ -1,18 +1,26 @@
 import os
 import shutil
 import re
+import sys
 
 from markdown_blocks import markdown_to_html_node
 
-def main():
-    src_path_content = "./content"
-    template_path = "./template.html"
-    dst_path_content = "./public"
-    
-    static_to_public()
-    generate_pages_recursive(src_path_content, template_path, dst_path_content)
 
-def static_to_public(src="./static", dst="./public"):
+def main():
+    
+    if len(sys.argv) > 1:
+        base_path = sys.argv[1]
+    else:
+        base_path = "/"
+    
+    template_path = "./template.html"
+    src_path = "./content"
+    dst_path = "./docs"
+    
+    static_to_public(dst_path)
+    generate_pages_recursive(src_path, dst_path, base_path, template_path)
+
+def static_to_public(dst, src="./static"):
     
     if os.path.exists(dst):
         shutil.rmtree(dst)
@@ -26,7 +34,7 @@ def static_to_public(src="./static", dst="./public"):
             shutil.copy(src_path, dst_path)
         else:
             os.mkdir(dst_path)
-            static_to_public(src_path, dst_path)
+            static_to_public(dst_path, src_path)
 
 def extract_title(markdown):
     heading_exist = re.match(r"^#\s+(.*)", markdown)
@@ -36,10 +44,10 @@ def extract_title(markdown):
 
     return heading_exist.group(1).strip()
 
-def generate_page(src, template_path, dst):
-    print(f'Generating page from {src} to {dst} using {template_path}')
+def generate_page(src_path, dst_path, base_path, template_path):
+    print(f'Generating page from {src_path} to {dst_path} using {template_path}')
     
-    with open(src, "r") as f:
+    with open(src_path, "r") as f:
         markdown = f.read()
     
     with open(template_path, "r") as f:
@@ -49,14 +57,13 @@ def generate_page(src, template_path, dst):
     title = extract_title(markdown)
     page = template.replace("{{ Title }}", title)
     page = page.replace("{{ Content }}", html)
-    
-    # file_name = src.split("/")[-1].rstrip("md")
-    # dst_path = os.path.join(dst, f'{file_name}.html')
+    page = page.replace('href="/', f'href="{base_path}')
+    page = page.replace('src="/', f'src="{base_path}')
 
-    with open(dst, "w") as f:
+    with open(dst_path, "w") as f:
         f.write(page)
 
-def generate_pages_recursive(src_path_content, template_path, dst_path_content):
+def generate_pages_recursive(src_path_content, dst_path_content, base_path, template_path):
     for item in os.listdir(src_path_content):
         src_path = os.path.join(src_path_content, item)
         
@@ -64,15 +71,15 @@ def generate_pages_recursive(src_path_content, template_path, dst_path_content):
             if item.endswith(".md"):
                 root, ext = os.path.splitext(item)
                 dst_path = os.path.join(dst_path_content, f'{root}.html')
-                generate_page(src_path, template_path, dst_path)
-        else:
-            if os.path.isdir(src_path):
-                dst_path = os.path.join(dst_path_content, item)
+                generate_page(src_path, dst_path, base_path, template_path)
 
-                if not os.path.exists(dst_path):
-                    os.mkdir(dst_path)
+        elif os.path.isdir(src_path):
+            dst_path = os.path.join(dst_path_content, item)
+
+            if not os.path.exists(dst_path):
+                os.mkdir(dst_path)
                 
-                generate_pages_recursive(src_path, template_path, dst_path)
+            generate_pages_recursive(src_path, dst_path, base_path, template_path)
 
 
 if __name__ == "__main__":
